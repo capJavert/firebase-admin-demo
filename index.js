@@ -4,7 +4,7 @@ var serviceAccount = require('./firebase-key.json');
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
-  databaseURL: "https://dummy-87c4d.firebaseio.com"
+  databaseURL: "https://lappsus-b97de.firebaseio.com"
 });
 
 // This registration token comes from the client FCM SDKs.
@@ -34,16 +34,30 @@ var message = {
     process.exit(1);
 }); */
 
-var uid = 'mycustomtokenbitch';
-var additionalClaims = {
-  userId: "0"
-};
+const express = require('express')
+const bodyParser = require('body-parser')
+const app = express()
+app.use(bodyParser.json())
+const port = 6666
 
-admin.auth().createCustomToken(uid, additionalClaims)
-  .then(function(customToken) {
-    // Send token back to client
-    console.log(customToken)
-  })
-  .catch(function(error) {
-    console.log('Error creating custom token:', error);
-  });
+app.post('/auth', async (req, res) => {
+    console.log('/auth', req.body)
+
+    const { uid } = req.body
+    var additionalClaims = {
+        userId: "0"
+    }
+
+    try {
+        const token = await admin.auth().createCustomToken(uid, additionalClaims)
+
+        res.json({
+            token
+        })
+    } catch (e) {
+        console.error('Error creating custom token:', e)
+        res.json(e)
+    }
+})
+
+app.listen(port, () => console.log(`Example app listening on port ${port}!`))
